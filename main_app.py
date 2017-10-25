@@ -8,7 +8,6 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField
 from wtforms.validators import Required
 from flask_sqlalchemy import SQLAlchemy
-## maybe not next two
 # from flask_sqlalchemy import Table, Column, Integer, ForeignKey, String, DateTime, Date, Time
 # from flask_sqlalchemy import relationship, backref
 
@@ -52,22 +51,19 @@ class Song(db.Model):
 class SongForm(FlaskForm):
     song = StringField("What is the title of your favorite song?", validators=[Required()])
     artist = StringField("What is the name of the artist who performs it?",validators=[Required()])
-    genre = StringField("What is the genre of that song?", validators
-        =[Required()])
+    # Add a line in the form to ask for the genre of the song, which should be required
     submit = SubmitField('Submit')
 
 ##### Helper functions
 
 ### For database additions / get_or_create
 def get_or_create_song(db_session, song_title, song_artist, song_genre):
-    song = db_session.query(Song).filter_by(title=song_title).first()
-    if song:
-        return song
-    else:
-        song = Song(title=song_title,artist=song_artist,genre=song_genre)
-        db_session.add(song)
-        db_session.commit()
-        return song
+    # Query for the song based on its title
+    # If it exists already, return the Song object
+    # Otherwise,
+    # Create a row in the Song table with this data
+    # Add it and commit it to the db
+    # Return the song object from the function, no matter what
 
 
 ##### Set up Controllers (view functions) #####
@@ -90,10 +86,12 @@ def index():
     num_songs = len(songs)
     form = SongForm()
     if form.validate_on_submit():
-        if db.session.query(Song).filter_by(title=form.song.data).first(): # If there's already a song with that title, though...
-            flash("You've already saved a song with that title!")
-        song = get_or_create_song(db.session,form.song.data, form.artist.data, form.genre.data)
-    # if song_set[1] is True:
+        # Check if there already is a song with that title
+        # And if so, flash a message that they've already saved a song with that title!
+        # (The flashed message is already set up in the template)
+
+        # Invoke the get_or_create function above to save a song with the data from the form
+    
         return redirect(url_for('see_all'))
     return render_template('index.html', form=form,num_songs=num_songs) 
 
@@ -103,10 +101,10 @@ def see_all():
     songs = Song.query.all()
     for s in songs:
         all_songs.append((s.title,s.artist, s.genre))
-    return render_template('all_songs.html',all_songs=all_songs)
+    # Add a return statement so that the corret data will be sent to the all_songs.html template!
 
 
 if __name__ == '__main__':
-    db.create_all()
-    manager.run() # NEW: run with this: python main_app.py runserver
+    db.create_all() # Creates database tables on run -- if you run one of the ways described below!
+    manager.run() # NEW: run with this: python main_app.py runserver (or app.run() if you get an error)
     # Also provides more tools for debugging
